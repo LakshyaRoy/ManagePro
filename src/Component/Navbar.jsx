@@ -1,9 +1,39 @@
-import React from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { MdInsertEmoticon } from "react-icons/md";
 import { ImPushpin } from "react-icons/im";
 import { MdSearch } from "react-icons/md";
+import { Task } from "../Context";
 
 const Navbar = () => {
+  const { allItems, setAllItems } = useContext(Task);
+  const [filter, setFilter] = useState("");
+  // Update context state with data from local storage
+  useEffect(() => {
+    // Update context state with data from local storage when component mounts
+    const getdatafromLocalStorage = JSON.parse(localStorage.getItem("items"));
+    if (getdatafromLocalStorage) {
+      setAllItems(getdatafromLocalStorage);
+    }
+  }, []);
+
+  useEffect(() => {
+    console.log(" allItems from navbar", allItems);
+  }, [allItems]);
+
+  const filterData = () => {
+    let filteredItems = allItems.filter((item) => {
+      if (item) {
+        return item.description.toLowerCase().includes(filter.toLowerCase());
+      } else {
+        return item;
+      }
+    });
+
+    console.log("filteredItems from navbar", filteredItems);
+  };
+
+  filterData();
+
   const styles = {
     navBarCenter: `flex justify-center items-center gap-4`,
     NavText: `font-bold font-serif text-md text-[#485565] cursor-pointer`,
@@ -27,6 +57,7 @@ const Navbar = () => {
           id="search"
           placeholder="Search"
           className="outline-none border-none text-[#485565] bg-[#fff] py-2 pl-10 pr-2 w-full sm:w-96 rounded-md shadow-md focus:shadow-sm"
+          onChange={(e) => setFilter(e.target.value)}
         />
       </div>
       <div className={`${styles.navBarCenter} hidden sm:flex`}>
