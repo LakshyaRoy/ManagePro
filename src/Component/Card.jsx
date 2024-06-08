@@ -36,7 +36,7 @@ const Card = ({
           <p className="text-blue-500 font-bold text-md">{time}</p>
         </div>
         <p
-          className={`text-gray-500 text-lg font-semibold my-1 ${
+          className={`text-gray-500 capitalize text-lg font-semibold my-1 ${
             completed ? "line-through" : ""
           }`}
         >
@@ -52,6 +52,7 @@ const Card = ({
                 className="mr-2"
                 value={completed}
                 onClick={handleCompleted}
+                checked={completed}
               />
               <span className="text-white cursor-pointer">Completed</span>
             </label>
