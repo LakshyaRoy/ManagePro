@@ -12,46 +12,92 @@ import { Task } from "../Context";
 
 const MainContent = () => {
   const { allItems, setAllItems } = useContext(Task);
-
   const [description, setDescription] = useState("");
   const [selectValue, setSelectValue] = useState(1);
   const [title, setTitle] = useState("");
-  const [mainTitle, setMainTitle] = useState("Product design");
+  const [mainTitle, setMainTitle] = useState(() => {
+    return getLocalStorage("title") || "Add Title...";
+  });
+  const [lastUpdateTimeForTitle, setLastUpdateTimeForTitle] = useState(
+    Date.now()
+  );
+  const [timeSinceUpdate, setTimeSinceUpdate] = useState(() => {
+    return getLocalStorage("TitleUpdateTime") || "0 minutes ago";
+  });
   const [clicked, setClicked] = useState(false);
   const [clearedList, setClearedList] = useState(false);
-
-  // const [items, setItems] = useState([]);
-
   const [items, setItems] = useState(() => {
     const savedItems = localStorage.getItem("items");
     return savedItems ? JSON.parse(savedItems) : [];
   });
 
-  const handleToggleCompleted = (id) => {
-    const updatedItems = items.map((item) =>
-      item.id === id ? { ...item, isCompleted: !item.isCompleted } : item
-    );
-    console.log(updatedItems);
-    setItems(updatedItems);
-    localStorage.setItem("items", JSON.stringify(updatedItems));
+  // Function to get an item from local storage
+  function getLocalStorage(name) {
+    const storedValue = localStorage.getItem(name);
+    return storedValue ? JSON.parse(storedValue) : null;
+  }
+
+  // console.log(getLocalStorage("TitleUpdateTime"));
+
+  // Function to set an item in local storage
+  const setLocalStorage = (name, value) => {
+    return localStorage.setItem(`${name}`, JSON.stringify(value));
   };
 
+  // Function to add a new item to the list
   const handleAddItems = (item) => {
     setItems((items) => [...items, item]);
     // Update context state
     setAllItems((prevItems) => [...prevItems, item]);
   };
 
+  // Function to handle changes in the description input field
   const handleChange = (e) => {
     setDescription(e.target.value);
   };
 
+  // Function to delete a specific item from the list
+  const handleDelete = (id) => {
+    setItems((items) => items.filter((item) => item.id !== id));
+  };
+  // Function to cancel the clear confirmation popup
+  const handleDeleteNo = () => {
+    setClearedList(false);
+  };
+
+  // Function to confirm and delete all tasks
+  const handleDeleteYes = () => {
+    const checkLocal = getLocalStorage("items");
+    // console.log(checkLocal.length);
+
+    if (checkLocal.length === 0) {
+      console.log("local storage is empty");
+      toast.warning("There is no task to clear!");
+      setClearedList(false);
+    } else {
+      setItems([]);
+      localStorage.removeItem("items");
+      toast.success("All tasks cleared!");
+      setClearedList(false);
+    }
+  };
+
+  // Function to show the clear confirmation popup
+  const handleClearPopUP = () => {
+    setClearedList(true);
+  };
+
+  // Function to handle changes in the select dropdown
   const handleSelectChange = (e) => {
     setSelectValue(Number(e.target.value));
   };
+
+  // Function to handle changes in the title input field
   const handletitleChange = (e) => {
     setTitle(e.target.value);
   };
+
+  // Function to handle the form submission for title
   const handletitleSubmit = (e) => {
     e.preventDefault();
     const notify = () => toast.warn("Please add some title!");
@@ -59,10 +105,22 @@ const MainContent = () => {
       return notify();
     }
     setMainTitle(title);
+    setLastUpdateTimeForTitle(Date.now());
     setTitle("");
     setClicked(false);
   };
 
+  // Function to toggle the completion status of an item
+  const handleToggleCompleted = (id) => {
+    const updatedItems = items.map((item) =>
+      item.id === id ? { ...item, isCompleted: !item.isCompleted } : item
+    );
+    console.log(updatedItems);
+    setItems(updatedItems);
+    setLocalStorage("items", updatedItems);
+  };
+
+  // Function to handle the form submission for adding a new task
   const handleSubmit = (e) => {
     e.preventDefault();
     const notify = () => toast.warn("Please add some description to add task!");
@@ -90,33 +148,54 @@ const MainContent = () => {
     setSelectValue(1);
   };
 
-  const handleDelete = (id) => {
-    setItems((items) => items.filter((item) => item.id !== id));
-  };
+  // Effect to update local storage whenever the main title changes
+  useEffect(() => {
+    setLocalStorage("title", mainTitle);
+  }, [mainTitle]);
 
-  const handleClearPopUP = () => {
-    setClearedList(true);
-  };
-  const handleDeleteYes = () => {
-    const checkLocal = JSON.parse(localStorage.getItem("items"));
-    // console.log(checkLocal.length);
+  // Effect to calculate and update the time difference since the last update
+  useEffect(() => {
+    const updateTimeDifference = () => {
+      const currentTime = Date.now();
+      const timeElapsed = currentTime - lastUpdateTimeForTitle;
 
-    if (checkLocal.length === 0) {
-      console.log("local storage is empty");
-      toast.warning("There is no task to clear!");
-      setClearedList(false);
-    } else {
-      setItems([]);
-      localStorage.removeItem("items");
-      toast.success("All tasks cleared!");
-      setClearedList(false);
-    }
-  };
+      // Calculate time difference in seconds
+      const seconds = Math.floor(timeElapsed / 1000);
 
-  const handleDeleteNo = () => {
-    setClearedList(false);
-  };
+      if (seconds < 60) {
+        // 1  minutes = 60 seconds
+        // Less than a minute ago
+        setTimeSinceUpdate(`${seconds} seconds ago`);
+      } else if (seconds < 3600) {
+        // 1 hour = 3600 seconds
+        // Less than an hour ago
+        const minutes = Math.floor(seconds / 60);
+        setTimeSinceUpdate(`${minutes} minutes ago`);
+      } else if (seconds < 86400) {
+        // 1 day = 86400 seconds
+        // Less than a day ago
+        const hours = Math.floor(seconds / 3600);
+        setTimeSinceUpdate(`${hours} hours ago`);
+      } else {
+        // More than a day ago
+        const days = Math.floor(seconds / 86400);
+        setTimeSinceUpdate(`${days} days ago`);
+      }
 
+      // Update local storage
+    };
+
+    // Update immediately
+    updateTimeDifference();
+
+    // Then update every second
+    const intervalId = setInterval(updateTimeDifference, 1000);
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(intervalId);
+  }, [lastUpdateTimeForTitle]);
+
+  // Current date formatting for display
   const date = new Date();
   const formattedDate = new Intl.DateTimeFormat("en-US", {
     year: "numeric",
@@ -134,7 +213,7 @@ const MainContent = () => {
         <p className="text-gray-500 text-md font-bold my-4">
           Last Update{" "}
           <span>
-            <span className="text-blue-500 ">10 minutes ago</span>
+            <span className="text-blue-500 ">{timeSinceUpdate}</span>
           </span>
         </p>
 
