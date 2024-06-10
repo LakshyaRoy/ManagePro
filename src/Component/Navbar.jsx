@@ -102,7 +102,7 @@ const Navbar = () => {
                   src={profileImage}
                   alt=" profile image"
                   className="w-full h-full rounded-full "
-                  onClick={() => setopen((p) => !p)}
+                  onClick={() => setOpen((p) => !p)}
                   title="click to change image"
                 />
               </div>
