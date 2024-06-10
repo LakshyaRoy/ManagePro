@@ -287,52 +287,53 @@ const MainContent = () => {
         </p>
 
         {/* Form section */}
-        <section className="flex flex-col sm:flex-row justify-between items-center">
-          <form onSubmit={handleSubmit}>
-            <div className="flex justify-start items-center gap-4 sm:gap-10 mb-4 sm:mb-0">
-              <select
-                value={selectValue}
-                onChange={(e) => handleSelectChange(e)}
-                name="numbers"
-                id="numbers"
-                className="bg-[#fff] rounded-md px-4 sm:px-6 py-2 border-none outline-none shadow-md focus:shadow-sm"
-              >
-                {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => {
-                  return (
-                    <option key={num} value={num}>
-                      {num}
-                    </option>
-                  );
-                })}
-              </select>
-              <div className="relative">
-                <input
-                  type="text"
-                  placeholder="Type here..."
-                  className="outline-none border-none text-[#485565] bg-[#fff] py-2 pl-10 pr-2 w-full sm:w-96 rounded-md shadow-md focus:shadow-sm"
-                  value={description}
-                  onChange={(e) => handleChange(e)}
-                />
-
-                <MdOutlineEdit
-                  className="cursor-pointer absolute top-[10px] left-2"
-                  size={20}
-                  color="gray"
-                />
-              </div>
-
-              <button
-                type="submit"
-                className="bg-blue-500 text-white px-4 sm:px-6 py-2 rounded-md shadow-lg hover:shadow-md hover:bg-blue-600"
-              >
-                Add
-              </button>
+        <section className="flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center p-4  space-y-4 sm:space-y-0 space-x-0 ">
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-col sm:flex-row justify-start items-center gap-4 sm:gap-6 w-full sm:w-auto"
+          >
+            <select
+              value={selectValue}
+              onChange={handleSelectChange}
+              name="numbers"
+              id="numbers"
+              className="bg-white rounded-md px-4 py-2 border-none outline-none shadow-md focus:shadow-sm w-full sm:w-auto"
+            >
+              {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
+                <option key={num} value={num}>
+                  {num}
+                </option>
+              ))}
+            </select>
+            <div className="relative w-full sm:w-96">
+              <input
+                type="text"
+                placeholder="Type here..."
+                className="outline-none border-none text-gray-600 bg-white py-2 pl-10 pr-2 w-full rounded-md shadow-md focus:shadow-sm"
+                value={description}
+                onChange={handleChange}
+              />
+              <MdOutlineEdit
+                className="cursor-pointer absolute top-1/2 left-3 transform -translate-y-1/2"
+                size={20}
+                color="gray"
+              />
             </div>
+            <button
+              type="submit"
+              className="bg-blue-500 text-white px-4 sm:px-6 py-2 rounded-md shadow-lg hover:shadow-md hover:bg-blue-600 w-full sm:w-auto"
+            >
+              Add
+            </button>
           </form>
 
-          {clearedList ? (
-            <div className="absolute bg-white border-gray-300 border-2 rounded-lg p-4 sm:p-8 shadow sm:shadow-2xl shadow-[#dfeffa] ${clicked ? 'h-[40vh] sm:h-auto' : 'h-0'} w-[90vw] sm:w-[50vw] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 transition-all duration-300 ease-in-out">
-              <div className="flex flex-col gap-4 relative">
+          {clearedList && (
+            <div
+              className={`absolute bg-white border-gray-300 border-2 rounded-lg p-4 sm:p-8 shadow-md transition-all duration-300 ease-in-out w-[90vw] sm:w-[50vw] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 ${
+                clicked ? "h-[40vh] sm:h-auto" : ""
+              }`}
+            >
+              <div className="flex flex-col gap-4 ">
                 <p className="text-gray-500 text-lg">
                   Are you sure you want to clear all the items in the list?
                 </p>
@@ -345,22 +346,26 @@ const MainContent = () => {
                   </button>
                   <button
                     onClick={handleDeleteYes}
-                    className="text-red-500 border-2 border-red-500 px-6 py-2 rounded-md text-center hover:bg-red-700  hover:text-white  transition-all duration-300 ease-in-out shadow-md"
+                    className="text-red-500 border-2 border-red-500 px-6 py-2 rounded-md text-center hover:bg-red-700 hover:text-white transition-all duration-300 ease-in-out shadow-md"
                   >
                     Yes
                   </button>
                 </div>
               </div>
             </div>
-          ) : null}
+          )}
 
-          <div className="flex justify-end items-center gap-4 relative">
-            <div className="flex items-center gap-2 relative">
-              <FaSort size={20} color="gray" className="absolute left-1" />
+          <div className="flex flex-col sm:flex-row justify-end items-center gap-4 w-full sm:w-auto relative">
+            <div className="flex items-center gap-2 relative w-full sm:w-auto">
+              <FaSort
+                size={20}
+                color="gray"
+                className="absolute left-3 top-1/2 transform -translate-y-1/2"
+              />
               <select
                 name="Sort"
                 id="Sort"
-                className="bg-[#fff] rounded-md px-8 py-2 border-none outline-none shadow-md focus:shadow-sm"
+                className="bg-white rounded-md pl-10 pr-4 py-2 border-none outline-none shadow-md focus:shadow-sm w-full sm:w-auto"
               >
                 <option value="Sort by Input Order">Sort by Input Order</option>
                 <option value="Sort by Description">Sort by Description</option>
@@ -372,12 +377,10 @@ const MainContent = () => {
 
             <button
               onClick={handleClearPopUP}
-              className="bg-red-500 text-white px-4 sm:px-6 py-2 rounded-md shadow-lg hover:shadow-md hover:bg-red-600 flex items-center gap-2"
+              className="bg-red-500 text-white px-4 text-center sm:px-6 py-2 rounded-md shadow-lg hover:shadow-md hover:bg-red-600 flex items-center justify-center gap-2 w-full sm:w-auto"
             >
-              <span>
-                <FaRegTrashCan />
-              </span>
-              Clear List
+              <FaRegTrashCan />
+              <span>Clear List</span>
             </button>
           </div>
         </section>
