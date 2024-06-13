@@ -1,17 +1,24 @@
-import React, { createContext, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 
 export const Task = createContext();
 export const Filter = createContext();
 
 const Context = ({ children }) => {
-  const [allItems, setAllItems] = useState([]);
-  const [filteredItems, setFilteredItems] = useState([]);
+  const savedItems = localStorage.getItem("items");
+  const [allItems, setAllItems] = useState(
+    savedItems !== null ? JSON.parse(savedItems) : []
+  );
+  const [searchQuery, setSearchQuery] = useState("");
 
+  useEffect(() => {
+    // Update localStorage whenever allItems changes
+    localStorage.setItem("items", JSON.stringify(allItems));
+  }, [allItems]);
   return (
-    <Task.Provider value={{ allItems, setAllItems }}>
-      <Filter.Provider value={{ filteredItems, setFilteredItems }}>
-        {children}
-      </Filter.Provider>
+    <Task.Provider
+      value={{ allItems, setAllItems, searchQuery, setSearchQuery }}
+    >
+      {children}
     </Task.Provider>
   );
 };
