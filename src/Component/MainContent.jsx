@@ -1,43 +1,36 @@
-import React, { useContext, useEffect, useState } from "react";
-import { MdOutlineEditNote } from "react-icons/md";
+import { useContext, useEffect, useState } from "react";
 import MainContent2 from "../Component/MainContent2";
-import { MdOutlineEdit } from "react-icons/md";
-import { FaSort } from "react-icons/fa6";
-import { FaRegTrashCan } from "react-icons/fa6";
+import {
+  MdOutlineEditNote,
+  MdOutlineEdit,
+  MdOutlineSort,
+  MdDeleteOutline,
+  MdClose,
+  MdArrowDropDown,
+} from "react-icons/md";
 import { ToastContainer, toast } from "react-toastify";
-import { IoCloseCircleOutline } from "react-icons/io5";
 import "react-toastify/dist/ReactToastify.css";
 import { v4 as uuidv4 } from "uuid";
 import { Task } from "../Context";
 
 const MainContent = () => {
   const { allItems, setAllItems } = useContext(Task);
-  const [description, setDescription] = useState("");
   const [selectValue, setSelectValue] = useState(1);
-  const [title, setTitle] = useState("");
   const [mainTitle, setMainTitle] = useState(() => {
     return getLocalStorage("title") || "Add Title...";
   });
-  const [lastUpdateTimeForTitle, setLastUpdateTimeForTitle] = useState(
-    Date.now()
-  );
-  const [timeSinceUpdate, setTimeSinceUpdate] = useState(() => {
-    return getLocalStorage("TitleUpdateTime") || "0 minutes ago";
-  });
+  const [timeSinceUpdate, setTimeSinceUpdate] = useState("");
   const [clicked, setClicked] = useState(false);
   const [clearedList, setClearedList] = useState(false);
-  const [items, setItems] = useState(() => {
-    const savedItems = localStorage.getItem("items");
-    return savedItems ? JSON.parse(savedItems) : [];
-  });
+  const [selectedOption, setSelectedOption] = useState("Sort by Input Order");
+
+  // console.log(selectedOption);
 
   // Function to get an item from local storage
   function getLocalStorage(name) {
     const storedValue = localStorage.getItem(name);
     return storedValue ? JSON.parse(storedValue) : null;
   }
-
-  // console.log(getLocalStorage("TitleUpdateTime"));
 
   // Function to set an item in local storage
   const setLocalStorage = (name, value) => {
@@ -46,19 +39,26 @@ const MainContent = () => {
 
   // Function to add a new item to the list
   const handleAddItems = (item) => {
-    setItems((items) => [...items, item]);
     // Update context state
-    setAllItems((prevItems) => [...prevItems, item]);
-  };
+    // console.log(item);
 
-  // Function to handle changes in the description input field
-  const handleChange = (e) => {
-    setDescription(e.target.value);
+    if (allItems !== null) {
+      setAllItems([...allItems, item]);
+      setLocalStorage("items", [...allItems, item]);
+    } else {
+      setAllItems([item]);
+      setLocalStorage("items", [item]);
+    }
   };
+  // console.log(allItems);
 
   // Function to delete a specific item from the list
   const handleDelete = (id) => {
-    setItems((items) => items.filter((item) => item.id !== id));
+    setAllItems((items) => items.filter((item) => item.id !== id));
+    setLocalStorage(
+      "items",
+      allItems.filter((item) => item.id !== id)
+    );
   };
   // Function to cancel the clear confirmation popup
   const handleDeleteNo = () => {
@@ -67,17 +67,22 @@ const MainContent = () => {
 
   // Function to confirm and delete all tasks
   const handleDeleteYes = () => {
-    const checkLocal = getLocalStorage("items");
-    // console.log(checkLocal.length);
+    try {
+      const checkLocal = JSON.parse(localStorage.getItem("items"));
 
-    if (checkLocal.length === 0) {
-      console.log("local storage is empty");
-      toast.warning("There is no task to clear!");
-      setClearedList(false);
-    } else {
-      setItems([]);
-      localStorage.removeItem("items");
-      toast.success("All tasks cleared!");
+      if (!checkLocal || checkLocal.length === 0) {
+        console.log("Local storage is empty");
+        toast.warning("There is no task to clear!");
+        setClearedList(false);
+      } else {
+        setAllItems([]);
+        localStorage.removeItem("items");
+        toast.success("All tasks cleared!");
+        setClearedList(false);
+      }
+    } catch (error) {
+      console.error("Error accessing local storage:", error);
+      toast.error("An error occurred while clearing tasks!");
       setClearedList(false);
     }
   };
@@ -92,163 +97,183 @@ const MainContent = () => {
     setSelectValue(Number(e.target.value));
   };
 
-  // Function to handle changes in the title input field
-  const handletitleChange = (e) => {
-    setTitle(e.target.value);
-  };
-
   // Function to handle the form submission for title
   const handletitleSubmit = (e) => {
     e.preventDefault();
-    const notify = () => toast.warn("Please add some title!");
+
+    const title = e.target[0].value;
     if (!title) {
-      return notify();
+      return toast.warn("Please add some title!");
     }
     setMainTitle(title);
-    setLastUpdateTimeForTitle(Date.now());
-    setTitle("");
+    setLocalStorage("title", title);
+    setLocalStorage("TitleTime", new Date().toISOString());
+    updateTimeDifference();
     setClicked(false);
   };
 
   // Function to toggle the completion status of an item
   const handleToggleCompleted = (id) => {
-    const updatedItems = items.map((item) =>
+    const updatedItems = allItems?.map((item) =>
       item.id === id ? { ...item, isCompleted: !item.isCompleted } : item
     );
-    console.log(updatedItems);
-    setItems(updatedItems);
+    setAllItems(updatedItems);
     setLocalStorage("items", updatedItems);
   };
 
   // Function to handle the form submission for adding a new task
   const handleSubmit = (e) => {
     e.preventDefault();
+    const selectValue = e.target[0].value;
+    const description = e.target[1].value;
     const notify = () => toast.warn("Please add some description to add task!");
     if (!description) {
       return notify();
     }
-
     const newItems = {
       description: description,
       selectValue: selectValue,
       isCompleted: false,
       id: uuidv4(),
-      date: new Intl.DateTimeFormat("en-GB", {
-        day: "numeric",
-        month: "long",
-        year: "numeric",
-      }).format(new Date()),
+      date: new Date().toDateString(),
       time: new Date().toLocaleTimeString("en-US"),
     };
 
     handleAddItems(newItems);
 
     // Reset form fields
-    setDescription("");
+    e.target.reset();
     setSelectValue(1);
   };
 
-  // Effect to update local storage whenever the main title changes
-  useEffect(() => {
-    setLocalStorage("title", mainTitle);
-  }, [mainTitle]);
+  const updateTimeDifference = () => {
+    const lastUpdatedTime = getLocalStorage("TitleTime");
+    const today =
+      new Date().toDateString() === new Date(lastUpdatedTime).toDateString();
+    if (today) {
+      const hours =
+        new Date().getHours() - new Date(lastUpdatedTime).getHours();
+      const minutes =
+        new Date().getMinutes() - new Date(lastUpdatedTime).getMinutes();
 
-  // Effect to calculate and update the time difference since the last update
-  useEffect(() => {
-    const updateTimeDifference = () => {
-      const currentTime = Date.now();
-      const timeElapsed = currentTime - lastUpdateTimeForTitle;
+      const totalMinutes = hours * 60 + minutes;
 
-      // Calculate time difference in seconds
-      const seconds = Math.floor(timeElapsed / 1000);
-
-      if (seconds < 60) {
-        // 1  minutes = 60 seconds
-        // Less than a minute ago
-        setTimeSinceUpdate(`${seconds} seconds ago`);
-      } else if (seconds < 3600) {
-        // 1 hour = 3600 seconds
-        // Less than an hour ago
-        const minutes = Math.floor(seconds / 60);
-        setTimeSinceUpdate(`${minutes} minutes ago`);
-      } else if (seconds < 86400) {
-        // 1 day = 86400 seconds
-        // Less than a day ago
-        const hours = Math.floor(seconds / 3600);
-        setTimeSinceUpdate(`${hours} hours ago`);
-      } else {
-        // More than a day ago
-        const days = Math.floor(seconds / 86400);
-        setTimeSinceUpdate(`${days} days ago`);
+      if (totalMinutes >= 60) {
+        const totalHours = Math.floor(totalMinutes / 60);
+        return setTimeSinceUpdate(`${totalHours} hours ago!`);
       }
 
-      // Update local storage
-    };
+      return setTimeSinceUpdate(`${totalMinutes} minutes ago!`);
+    }
 
-    // Update immediately
-    updateTimeDifference();
+    setTimeSinceUpdate(new Date(lastUpdatedTime).toDateString());
+  };
+  // Effect to calculate and update the time difference since the last update
+  useEffect(() => {
+    const getTitleTimeFromLocalStorage = getLocalStorage("TitleTime");
+    if (getTitleTimeFromLocalStorage !== null) {
+      updateTimeDifference();
+      const today =
+        new Date().toDateString() ===
+        new Date(getTitleTimeFromLocalStorage).toDateString();
+      const interval = setInterval(() => {
+        updateTimeDifference();
+      }, 1000 * 60);
 
-    // Then update every second
-    const intervalId = setInterval(updateTimeDifference, 1000);
+      if (!today) {
+        clearInterval(interval);
+      }
+    }
+  }, []);
 
-    // Cleanup interval on component unmount
-    return () => clearInterval(intervalId);
-  }, [lastUpdateTimeForTitle]);
+  const [sortedItems, setSortedItems] = useState([]);
+  const sortItems = () => {
+    if (allItems === null) {
+      setAllItems([]);
+    }
+    if (allItems !== null && allItems.length > 0) {
+      switch (selectedOption) {
+        case "Sort by Input Order":
+          setSortedItems([...allItems]);
+          break;
 
-  // Current date formatting for display
-  const date = new Date();
-  const formattedDate = new Intl.DateTimeFormat("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  }).format(date);
+        case "Sort by Description":
+          setSortedItems(
+            [...allItems].sort((a, b) =>
+              a.description.localeCompare(b.description)
+            )
+          );
+          break;
+
+        case "Sort by Completed Status":
+          setSortedItems(
+            [...allItems].sort(
+              (a, b) => Number(b.isCompleted) - Number(a.isCompleted)
+            )
+          );
+          break;
+
+        default:
+          setSortedItems([]);
+          break;
+      }
+    } else {
+      setSortedItems([]);
+    }
+  };
+
+  useEffect(() => {
+    sortItems();
+  }, [allItems, selectedOption]);
+
+  // console.log(sortedItems);
 
   return (
     <>
       <main
-        className={`p-4 sm:p-8 relative ${
+        className={`p-4 sm:p-8 w-full h-full relative ${
           clicked || clearedList ? "select-none" : ""
         }`}
       >
-        <p className="text-gray-500 text-md font-bold my-4">
-          Last Update{" "}
-          <span>
-            <span className="text-blue-500 ">{timeSinceUpdate}</span>
-          </span>
-        </p>
+        {timeSinceUpdate.length > 0 ? (
+          <p className="text-gray-500 text-md font-bold my-4">
+            Last Update{" "}
+            <span>
+              <span className="text-blue-500 ">{timeSinceUpdate}</span>
+            </span>
+          </p>
+        ) : null}
 
         <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center">
           <div className="flex items-end gap-5 mb-4 sm:mb-0">
-            <p className="text-[36px] sm:text-[54px] font-bold capitalize">
+            <h1
+              className="text-[36px] sm:text-[54px] font-bold capitalize"
+              title={mainTitle}
+            >
               {mainTitle}
-            </p>
+            </h1>
             <MdOutlineEditNote
               size={24}
               sm:size={30}
               color="gray"
               className="cursor-pointer mb-2"
               onClick={() => setClicked((prev) => !prev)}
+              title="Click to edit title"
             />
             {clicked ? (
               <div
                 className={`absolute bg-white border-gray-300 border-2 rounded-lg p-4 sm:p-8 shadow sm:shadow-2xl shadow-[#dfeffa] ${
-                  clicked ? "h-[40vh] sm:h-auto" : "h-0"
+                  clicked ? " sm:h-auto" : "h-0"
                 } w-[90vw] sm:w-[50vw] top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10 transition-all duration-300 ease-in-out `}
               >
                 <div className="flex flex-col gap-4 relative">
-                  <p className="text-gray-500 text-sm font-semibold ">
-                    Last Update{" "}
-                    <span>
-                      <span className="text-blue-500">10 minutes ago</span>
-                    </span>
-                  </p>
                   <p className="text-gray-500 text-sm font-semibold mb-4 ">
                     <span>Title:</span>{" "}
                     <span>
                       <span className="text-blue-500">{mainTitle}</span>
                     </span>
                   </p>
-                  <IoCloseCircleOutline
+                  <MdClose
                     className="absolute top-0 right-0 cursor-pointer text-red-500 hover:text-red-700 "
                     size={30}
                     onClick={() => setClicked((prev) => !prev)}
@@ -260,15 +285,15 @@ const MainContent = () => {
                   className="flex flex-col gap-4 w-full  mb-4  sm:mb-0  "
                 >
                   <input
+                    name="title"
+                    title="Enter title"
                     className="border border-gray-300 p-2 rounded-lg w-full mb-4 outline-none text-lg  font-semibold font-sans  text-[#485565] bg-[#fff]"
                     type="text"
-                    value={title}
-                    onChange={handletitleChange}
                     placeholder="Enter new title"
                   />
                   <button
                     type="submit"
-                    className="bg-blue-500 text-white px-4 py-2 rounded-md shadow-lg hover:shadow-md"
+                    className="bg-blue-500 text-white px-4 py-2 rounded-md shadow-lg  hover:bg-blue-700"
                   >
                     Submit
                   </button>
@@ -278,7 +303,9 @@ const MainContent = () => {
           </div>
           <div className="flex flex-col items-end">
             <p className="text-gray-500 text-md font-bold">Todays Date</p>
-            <p className="text-blue-500 font-bold text-lg">{formattedDate}</p>
+            <p className="text-blue-500 font-bold text-lg">
+              {new Date().toDateString()}
+            </p>
           </div>
         </div>
 
@@ -290,28 +317,47 @@ const MainContent = () => {
         <section className="flex flex-col lg:flex-row gap-4 justify-between items-start lg:items-center p-4  space-y-4 sm:space-y-0 space-x-0 ">
           <form
             onSubmit={handleSubmit}
-            className="flex flex-col sm:flex-row justify-start items-center gap-4 sm:gap-6 w-full sm:w-auto"
+            className="flex flex-col sm:flex-row justify-start items-center gap-4 sm:gap-6 w-full sm:w-auto "
           >
-            <select
-              value={selectValue}
-              onChange={handleSelectChange}
-              name="numbers"
-              id="numbers"
-              className="bg-white rounded-md px-4 py-2 border-none outline-none shadow-md focus:shadow-sm w-full sm:w-auto"
-            >
-              {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
-                <option key={num} value={num}>
-                  {num}
-                </option>
-              ))}
-            </select>
+            <div className="relative cursor-pointer flex items-center justify-between w-full sm:w-auto ">
+              <label
+                htmlFor="numbers"
+                className=" sm:absolute text-sm -left-10 -z-10  "
+              >
+                <span className="text-gray-500  text-sm font-semibold sm:text-[#F5F5F5] mx-5 ">
+                  Total Number of Quantity:
+                </span>
+              </label>
+
+              <select
+                value={selectValue}
+                onChange={handleSelectChange}
+                name="numbers"
+                id="numbers"
+                className="bg-white rounded-md px-4 py-2 border-none outline-none shadow-md focus:shadow-sm w-auto sm:w-auto "
+              >
+                {Array.from({ length: 20 }, (_, i) => i + 1).map((num) => (
+                  <option key={num} value={num}>
+                    {num}
+                  </option>
+                ))}
+              </select>
+              <MdArrowDropDown
+                size={20}
+                className=" absolute top-1/2 right-0 transform -translate-y-1/2  "
+              />
+            </div>
+
             <div className="relative w-full sm:w-96">
               <input
                 type="text"
+                name="description"
+                title="Add description"
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
                 placeholder="Type here..."
                 className="outline-none border-none text-gray-600 bg-white py-2 pl-10 pr-2 w-full rounded-md shadow-md focus:shadow-sm"
-                value={description}
-                onChange={handleChange}
               />
               <MdOutlineEdit
                 className="cursor-pointer absolute top-1/2 left-3 transform -translate-y-1/2"
@@ -321,7 +367,8 @@ const MainContent = () => {
             </div>
             <button
               type="submit"
-              className="bg-blue-500 text-white px-4 sm:px-6 py-2 rounded-md shadow-lg hover:shadow-md hover:bg-blue-600 w-full sm:w-auto"
+              title="Click to add"
+              className="bg-blue-500 text-white px-4 sm:px-6 py-2 rounded-md shadow-lg hover:shadow-md hover:bg-blue-500 w-full sm:w-auto"
             >
               Add
             </button>
@@ -357,29 +404,43 @@ const MainContent = () => {
 
           <div className="flex flex-col sm:flex-row justify-end items-center gap-4 w-full sm:w-auto relative">
             <div className="flex items-center gap-2 relative w-full sm:w-auto">
-              <FaSort
+              <label htmlFor="Sort">
+                <span className="text-[#F5F5F5] text-sm font-semibold absolute -z-10">
+                  Sort by:
+                </span>
+              </label>
+              <MdOutlineSort
                 size={20}
                 color="gray"
                 className="absolute left-3 top-1/2 transform -translate-y-1/2"
               />
+              <MdArrowDropDown
+                size={20}
+                color="gray"
+                className="absolute right-1 top-1/2 transform -translate-y-1/2"
+              />
               <select
                 name="Sort"
                 id="Sort"
-                className="bg-white rounded-md pl-10 pr-4 py-2 border-none outline-none shadow-md focus:shadow-sm w-full sm:w-auto"
+                title="Sort"
+                value={selectedOption}
+                onChange={(e) => setSelectedOption(e.target.value)}
+                className="bg-white rounded-md pl-10 pr-6 py-2 border-none outline-none shadow-md focus:shadow-sm w-full sm:w-auto"
               >
                 <option value="Sort by Input Order">Sort by Input Order</option>
                 <option value="Sort by Description">Sort by Description</option>
-                <option value="Sort by Packed Status">
-                  Sort by Packed Status
+                <option value="Sort by Completed Status">
+                  Sort by Completed Status
                 </option>
               </select>
             </div>
 
             <button
               onClick={handleClearPopUP}
+              title="Click to Clear all items"
               className="bg-red-500 text-white px-4 text-center sm:px-6 py-2 rounded-md shadow-lg hover:shadow-md hover:bg-red-600 flex items-center justify-center gap-2 w-full sm:w-auto"
             >
-              <FaRegTrashCan />
+              <MdDeleteOutline size={25} />
               <span>Clear List</span>
             </button>
           </div>
@@ -388,7 +449,7 @@ const MainContent = () => {
         {/* MainContent2 Component  */}
       </main>
       <MainContent2
-        items={items}
+        items={sortedItems}
         handleDelete={handleDelete}
         handleToggleCompleted={handleToggleCompleted}
       />

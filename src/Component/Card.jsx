@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { FaRegTrashCan } from "react-icons/fa6";
+
+import { MdDeleteOutline } from "react-icons/md";
 
 const Card = ({
   date,
@@ -20,7 +21,7 @@ const Card = ({
 
   return (
     <>
-      <div className="p-4 w-full max-w-[320px] border rounded-md m-8 flex flex-col md:mx-auto">
+      <div className="p-4 w-full max-w-[320px] border rounded-md m-8 flex flex-col mx-auto">
         {/* <figure className="flex justify-start w-10 h-10 rounded-full overflow-hidden ">
           <img
             className="w-full h-full object-cover bg-center"
@@ -43,16 +44,18 @@ const Card = ({
           {selectValue} {description}
         </p>
         <div className="flex justify-between items-start flex-col sm:flex-row gap-4 mt-4">
-          <div className="select-none bg-green-700 text-white px-2 py-2 rounded-md shadow-lg hover:shadow-md hover:bg-green-800">
-            <label className="text-gray-500 flex items-center">
+          <div className="select-none bg-green-800 text-white px-2 py-2 rounded-md shadow-lg hover:shadow-md hover:bg-green-700 w-full">
+            <label
+              className="text-gray-500 flex items-center"
+              title="Click to mark as completed"
+            >
               <input
+                title="Click to mark as completed"
                 type="checkbox"
                 name="check"
-                id="check"
                 className="mr-2"
-                value={completed}
-                onClick={handleCompleted}
                 checked={completed}
+                onChange={handleCompleted}
               />
               <span className="text-white cursor-pointer">Completed</span>
             </label>
@@ -60,10 +63,11 @@ const Card = ({
           {/* Delete */}
           <button
             onClick={() => handleDelete(id)}
-            className="bg-red-500 text-white px-2 py-2 rounded-md shadow-lg hover:shadow-md hover:bg-red-600 flex items-center gap-2"
+            title="Click to delete"
+            className="bg-red-500 text-white px-2 py-2 rounded-md shadow-lg hover:shadow-md hover:bg-red-600 flex items-center gap-2 w-full"
           >
             <span>
-              <FaRegTrashCan />
+              <MdDeleteOutline size={25} />
             </span>{" "}
             Delete
           </button>

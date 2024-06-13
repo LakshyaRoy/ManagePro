@@ -2,12 +2,13 @@ import React, { useContext, useEffect, useState } from "react";
 import { MdInsertEmoticon } from "react-icons/md";
 import { ImPushpin } from "react-icons/im";
 import { MdSearch } from "react-icons/md";
-import { Filter, Task } from "../Context";
+import { Task } from "../Context";
+import { toast } from "react-toastify";
 
 const Navbar = () => {
-  const { allItems, setAllItems } = useContext(Task);
-  // const { filteredItems, setFilteredItems } = useContext(Filter);
-  const [filter, setFilter] = useState("");
+  const { allItems, setAllItems, searchQuery, setSearchQuery } =
+    useContext(Task);
+  const [search, setSearch] = useState("");
   const [profileImage, setProfileImage] = useState(null);
   const [open, setOpen] = useState(false);
 
@@ -20,23 +21,18 @@ const Navbar = () => {
     setAllItems(() => getLocalStorage("items"));
   }, []);
 
-  function filterData() {
-    if (allItems?.length) {
-      const filtered = allItems.filter((item) =>
-        item.description.toLowerCase().includes(filter.toLowerCase())
-      );
-      return filtered;
-      // setNewFilteredItems(filtered);
+  useEffect(() => {
+    if (search.length > 0) {
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.set("search", search);
+      window.history.pushState({}, "", currentUrl);
     } else {
-      console.log("no data is coming in allitems in navbar");
+      const currentUrl = new URL(window.location.href);
+      currentUrl.searchParams.delete("search");
+      window.history.pushState({}, "", currentUrl);
     }
-    // setNewFilteredItems(filtered);
-  }
-  console.log(filterData());
-
-  // useEffect(() => {
-  //   console.log(newFilteredItems);
-  // }, [allItems]);
+    setSearchQuery(search);
+  }, [search]);
 
   useEffect(() => {
     const getImageFromLocalStorage = () => {
@@ -50,8 +46,14 @@ const Navbar = () => {
 
   const handleFileChange = (event) => {
     const file = event.target.files[0];
-    readImage(file);
-    setOpen(false);
+
+    if (file.size / 1024 < 1024) {
+      readImage(file);
+      setOpen(false);
+    } else {
+      toast.error("Image size should be less than 1MB");
+      setOpen(false);
+    }
   };
 
   const readImage = (file) => {
@@ -71,9 +73,9 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="flex sm:flex-row justify-between p-4 sm:p-8 items-center border border-b-2  gap-2">
+    <nav className="flex sm:flex-row justify-between p-4 sm:p-8 items-center border border-b-2  gap-2 ">
       <div className={`${styles.navBarCenter} `}>
-        <ImPushpin size={35} color="#3B82F6" />
+        <ImPushpin size={35} color="#0056B3" />
         <figcaption className={`${styles.NavText} hidden sm:block`}>
           ManagePro
         </figcaption>
@@ -84,13 +86,14 @@ const Navbar = () => {
           color="#3B82F6"
           className="absolute left-2 sm:left-1"
         />
+
         <input
           type="search"
           name="Search"
           id="search"
           placeholder="Search"
           className="outline-none border-none text-[#485565] bg-[#fff] py-2 pl-10 pr-2 w-full sm:w-96 rounded-md shadow-md focus:shadow-sm"
-          onChange={(e) => setFilter(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
         />
       </div>
       <div className={`${styles.navBarCenter}  sm:flex relative `}>
@@ -131,6 +134,7 @@ const Navbar = () => {
                 </label>
                 <input
                   id="fileInput"
+                  title="upload image"
                   type="file"
                   className="hidden"
                   name="myImage"
@@ -143,12 +147,12 @@ const Navbar = () => {
         ) : (
           <>
             <input
+              title="upload image"
               type="file"
               name="myImage"
               accept="image/png, image/gif, image/jpeg"
               onChange={handleFileChange}
             />
-            <MdInsertEmoticon size={40} color="#3B82F6" />
           </>
         )}
 
