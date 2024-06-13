@@ -1,0 +1,21 @@
+{
+  "name": "ManagePro - Efficient Task Management Software",
+  "short_name": "ManagePro",
+  "description": "A web app that helps you create and manage your tasks. Easily add, mark as completed, and sort items on your list. Shows date and item count.",
+  "icons": [
+    {
+      "src": "./icons/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "./icons/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "start_url": "/index.html",
+  "display": "standalone",
+  "background_color": "#F5F5F5",
+  "theme_color": "#F3FAFF"
+}
