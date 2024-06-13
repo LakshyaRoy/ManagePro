@@ -6,3 +6,125 @@ body {
   background-color: whitesmoke;
   /* background-color: #555 !important; */
 }
+
+/* Improved contrast for text */
+.text-gray-500 {
+  color: #4a4a4a; /* Darker gray for better contrast */
+}
+
+.text-blue-500 {
+  color: #003366; /* Darker blue for better contrast */
+}
+
+.bg-gray-100 {
+  background-color: #e0e0e0; /* Slightly darker background for contrast */
+}
+
+.bg-blue-500 {
+  background-color: #0056b3; /* Darker blue for better contrast */
+}
+
+.bg-red-500 {
+  background-color: #cc0000; /* Darker red for better contrast */
+}
+
+.text-white {
+  color: #ffffff;
+}
+
+/* Button hover states with better contrast */
+.hover\:bg-blue-600:hover {
+  background-color: #004494; /* Darker blue for hover state */
+}
+
+.hover\:bg-red-600:hover {
+  background-color: #a30000; /* Darker red for hover state */
+}
+
+/* Additional contrast improvements */
+.px-2 {
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.py-2 {
+  padding-top: 0.5rem;
+  padding-bottom: 0.5rem;
+}
+
+.px-4 {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+.sm\:px-6 {
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+.py-4 {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+}
+
+/* Text styles */
+.text-md {
+  font-size: 1rem; /* Medium text size */
+}
+
+.text-lg {
+  font-size: 1.125rem; /* Large text size */
+}
+
+.text-xl {
+  font-size: 1.25rem; /* Extra large text size */
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.my-4 {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+}
+
+.my-2 {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.flex {
+  display: flex;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-center {
+  justify-content: center;
+}
+
+.gap-2 {
+  gap: 0.5rem;
+}
+
+.rounded-md {
+  border-radius: 0.375rem;
+}
+
+.shadow-lg {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+    0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
