@@ -17,14 +17,13 @@
 ## 🛠️ Tech Stack
 
 - **Framework:** React + Vite
-- **State Management:** Local Storage
 - **Deployment:** Netlify
 
 ## 📂 Project Setup
 
 1. **Clone the repository**
    ```sh
-   git clone https://github.com/YOUR_GITHUB_USERNAME/ManagePro.git
+   git clone https://github.com/LakshyaRoy/ManagePro.git
    cd ManagePro
    ```
 2. **Install dependencies**
@@ -41,12 +40,6 @@
 ## 🚀 Live Demo
 
 [View Project](https://manage-pro.netlify.app/)
-
-## 📌 Future Improvements
-
-- Cloud-based storage for task persistence.
-- User authentication for personalized task management.
-- Dark mode for better user experience.
 
 ## 🤝 Contact
 
